@@ -55,8 +55,10 @@ public:
 	void EndTask();
 
 	
-	virtual void OnExecuteTask();
+	virtual void OnExecuteTask(UObject* OwningObject);
 	void InitTaskFromData(const FTAbilityTaskData& Data);
 	
 	FTaskEnded OnEndTask;
+	
+	FTAbilityTaskData TaskData;
 };

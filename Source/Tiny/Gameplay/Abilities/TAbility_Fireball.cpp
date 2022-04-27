@@ -30,8 +30,6 @@ void UTAbility_Fireball::ActivateAbility()
 	ExecuteTask(UTAbilityTask_PlayActionAndWaitForEvent::StaticClass(), ActionTaskParams);
 	// ExecuteTask(UTAbilityTask_SpawnActorAndWaitForEvent::StaticClass(), FireballTaskParams);
 	
-	EndAbility();
-
 }
 
 void UTAbility_Fireball::EndAbility()

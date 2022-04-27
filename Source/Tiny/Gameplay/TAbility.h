@@ -21,6 +21,9 @@ class TINY_API UTAbility : public UObject
 public:
 	UPROPERTY(EditAnywhere)
 	UTexture2D* AbilityIcon;
+	TArray<UTAbilityTask*>PendingTasks;
+	
+	bool bIsPendingActivation = false;
 
 	UFUNCTION(BlueprintCallable)
 	virtual void ActivateAbility();

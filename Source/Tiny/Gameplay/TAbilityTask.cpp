@@ -8,10 +8,11 @@ void UTAbilityTask::EndTask()
 	OnEndTask.Broadcast();
 }
 
-void UTAbilityTask::OnExecuteTask()
+void UTAbilityTask::OnExecuteTask(UObject* OwningObject)
 {
 }
 
 void UTAbilityTask::InitTaskFromData(const FTAbilityTaskData& Data)
 {
+	TaskData = Data;
 }

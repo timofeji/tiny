@@ -10,10 +10,10 @@
 /**
  * 
  */
-UCLASS(Abstract)
+UCLASS()
 class TINY_API UTAbilityTask_PlayActionAndWaitForEvent : public UTAbilityTask
 {
 	GENERATED_BODY()
 
-	virtual void OnExecuteTask() override;
+	virtual void OnExecuteTask(UObject* OwningObject) override;
 };

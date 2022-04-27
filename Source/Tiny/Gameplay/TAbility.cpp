@@ -3,10 +3,17 @@
 
 #include "TAbility.h"
 
+#include "Kismet/GameplayStatics.h"
 #include "Tiny/TGameplayGlobals.h"
 
 void UTAbility::ActivateAbility()
 {
+	if(bIsPendingActivation)
+	{
+		return;
+	}
+
+	
 	ensureAlwaysMsgf(TOwner,
 	                 TEXT("%s(): tried to activate ability without an owner"),
 	                 *FString
@@ -27,7 +34,7 @@ void UTAbility::EndAbility()
 
 void UTAbility::ActivateTask(UTAbilityTask* Task)
 {
-	Task->OnExecuteTask();
+	Task->OnExecuteTask(TOwner);
 	// Task->OnEndTask.Add();
 	CurrentlyExecutingTask = Task;
 }
@@ -42,7 +49,10 @@ void UTAbility::EndTask(UTAbilityTask* Task)
 	UTAbilityTask* NewTaskToActivate;
 	TaskQueue.Dequeue(NewTaskToActivate);
 
-	ActivateTask(NewTaskToActivate);
+	if (NewTaskToActivate)
+	{
+		ActivateTask(NewTaskToActivate);
+	}
 }
 
 
@@ -52,10 +62,8 @@ void UTAbility::ExecuteTask(TSubclassOf<UTAbilityTask> TaskClass, FTAbilityTaskD
 	{
 		return;
 	}
-
-
-	auto Task = NewObject<UTAbilityTask>(GetOuter(),
-	                                     TaskClass);
+	UTAbilityTask* Task = NewObject<UTAbilityTask>(GetOuter(),
+	                                               TaskClass, NAME_None, RF_StrongRefOnFrame);
 	Task->InitTaskFromData(Data);
 
 
