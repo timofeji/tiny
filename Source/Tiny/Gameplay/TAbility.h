@@ -10,6 +10,11 @@
 
 class UTexture2D;
 class UTAbilityTask;
+
+
+DECLARE_MULTICAST_DELEGATE(FAbilityActivated);
+DECLARE_MULTICAST_DELEGATE(FAbilityEnded);
+
 /**
  * 
  */
@@ -35,7 +40,7 @@ public:
 	virtual void EndAbility();
 
 	void ActivateTask(UTAbilityTask* Task);
-	void EndTask(UTAbilityTask* Task);
+	void OnTaskEnded(UTAbilityTask* Task);
 
 	
 	UFUNCTION(BlueprintCallable)
@@ -51,6 +56,9 @@ public:
 	UFUNCTION(BlueprintCallable,BlueprintImplementableEvent)
 	void OnInputPressed();
 	virtual void InputPressed() { OnInputPressed(); }
+
+	FAbilityActivated OnAbilityActivated;
+	FAbilityEnded OnAbilityEnded;
 
 
 	TArray<UTAbilityTask*> ActiveTasks;

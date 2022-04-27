@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Tiny/Gameplay/TAbility.h"
 #include "TAbilityActivationIconWidget.generated.h"
 
 class UImage;
@@ -14,11 +15,20 @@ UCLASS()
 class TINY_API UTAbilityActivationIconWidget : public UUserWidget
 {
 	GENERATED_BODY()
-public:	
+public:
+
+	
+
+	
+	UPROPERTY(EditAnywhere)
+	UMaterialInterface* IconMaterial;
 
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
 	UImage* AbilityIcon;
 
-	
+	void InitFromAbility(UTAbility* Ability);
 
+protected:
+	UMaterialInstanceDynamic* IconMatInstance;
+	
 };

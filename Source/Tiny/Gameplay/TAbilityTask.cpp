@@ -5,7 +5,7 @@
 
 void UTAbilityTask::EndTask()
 {
-	OnEndTask.Broadcast();
+	OnEndTask.Broadcast(this);
 }
 
 void UTAbilityTask::OnExecuteTask(UObject* OwningObject)

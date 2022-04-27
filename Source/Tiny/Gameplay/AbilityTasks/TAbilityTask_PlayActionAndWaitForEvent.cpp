@@ -8,8 +8,10 @@
 void UTAbilityTask_PlayActionAndWaitForEvent::OnExecuteTask(UObject* OwningObject)
 {
 	auto TChar = Cast<ATCharacter>(OwningObject);
-	// TaskData.GetField()
+	TaskData.GetField("Montage");
 	// TChar->PlayAnimMontage();
 	
 	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("LOCATION:")));
+
+	EndTask();
 }

@@ -10,7 +10,20 @@
 
 UTAbility_Fireball::UTAbility_Fireball()
 {
-	// AbilityIcon = ConstructorHelpers::FObjectFinder<UTexture2D>
+	// Structure to hold one-time initialization
+	struct FConstructorStatics
+	{
+		ConstructorHelpers::FObjectFinder<UTexture2D> Icon;
+
+		FConstructorStatics()
+			: Icon(
+				TEXT("Texture2D'/Game/UI/IconTextures/T_UI_Fireball.T_UI_Fireball'"))
+		{
+		}
+	};
+	static FConstructorStatics ConstructorStatics;
+
+	AbilityIcon = ConstructorStatics.Icon.Object;
 }
 
 void UTAbility_Fireball::ActivateAbility()
@@ -19,17 +32,21 @@ void UTAbility_Fireball::ActivateAbility()
 
 	//Ability Data
 	FTAbilityTaskData ActionTaskParams;
-	ActionTaskParams.AddField<FString>("Event", "Fireball");
-	ActionTaskParams.AddField<FString>("Montage", "Fireball");
+	ActionTaskParams.AddField<FString>("Event",
+	                                   "Fireball");
+	ActionTaskParams.AddField<FString>("Montage",
+	                                   "Fireball");
 	FTAbilityTaskData FireballTaskParams;
-	FireballTaskParams.AddField<FString>("Event", "Hit");
+	FireballTaskParams.AddField<FString>("Event",
+	                                     "Hit");
 	// FireballTaskParams.AddField<FVector>("TargetInfo", );
-	FireballTaskParams.AddField<uint32>("Damage", 35);
+	FireballTaskParams.AddField<uint32>("Damage",
+	                                    35);
 
 	//Ability Flow 
-	ExecuteTask(UTAbilityTask_PlayActionAndWaitForEvent::StaticClass(), ActionTaskParams);
-	// ExecuteTask(UTAbilityTask_SpawnActorAndWaitForEvent::StaticClass(), FireballTaskParams);
-	
+	// ExecuteTask(UTAbilityTask_PlayActionAndWaitForEvent::StaticClass(),
+	//             ActionTaskParams);
+	ExecuteTask(UTAbilityTask_SpawnActorAndWaitForEvent::StaticClass(), FireballTaskParams);
 }
 
 void UTAbility_Fireball::EndAbility()

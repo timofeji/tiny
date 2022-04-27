@@ -32,3 +32,13 @@ struct FTCharacterAbilityRow : public FTableRowBase
 	UPROPERTY(EditAnywhere)
 	UTexture2D* AbilityIcon;
 };
+
+
+USTRUCT(BlueprintType)
+struct TINY_API FTAbilityAttribute
+{
+	
+	GENERATED_BODY()
+	// template <typename FieldType>;
+	// typedef;
+};

@@ -8,12 +8,12 @@
 
 void UTAbility::ActivateAbility()
 {
-	if(bIsPendingActivation)
+	if (bIsPendingActivation)
 	{
 		return;
 	}
 
-	
+
 	ensureAlwaysMsgf(TOwner,
 	                 TEXT("%s(): tried to activate ability without an owner"),
 	                 *FString
@@ -34,18 +34,19 @@ void UTAbility::EndAbility()
 
 void UTAbility::ActivateTask(UTAbilityTask* Task)
 {
-	Task->OnExecuteTask(TOwner);
-	// Task->OnEndTask.Add();
+	Task->OnEndTask.AddUObject(this,
+	                       &UTAbility::OnTaskEnded);
+	
 	CurrentlyExecutingTask = Task;
+	Task->OnExecuteTask(TOwner);
 }
 
-void UTAbility::EndTask(UTAbilityTask* Task)
+//Check if newly ended task is the currently executing one,
+//and execute the next one in the queue
+void UTAbility::OnTaskEnded(UTAbilityTask* Task)
 {
-	if (Task == CurrentlyExecutingTask)
-	{
-		CurrentlyExecutingTask = nullptr;
-	}
-
+	Task->BeginDestroy();
+	
 	UTAbilityTask* NewTaskToActivate;
 	TaskQueue.Dequeue(NewTaskToActivate);
 
@@ -63,7 +64,9 @@ void UTAbility::ExecuteTask(TSubclassOf<UTAbilityTask> TaskClass, FTAbilityTaskD
 		return;
 	}
 	UTAbilityTask* Task = NewObject<UTAbilityTask>(GetOuter(),
-	                                               TaskClass, NAME_None, RF_StrongRefOnFrame);
+	                                               TaskClass,
+	                                               NAME_None,
+	                                               RF_StrongRefOnFrame);
 	Task->InitTaskFromData(Data);
 
 

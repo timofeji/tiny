@@ -3,20 +3,15 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "TGameplayTypes.h"
 #include "UObject/Object.h"
 #include "TAbilityTask.generated.h"
 
 
-DECLARE_MULTICAST_DELEGATE(FTaskEnded);
+class UTAbilityTask;
 
-USTRUCT(BlueprintType)
-struct TINY_API FTAbilityAttribute
-{
-	
-	GENERATED_BODY()
-	// template <typename FieldType>;
-	// typedef;
-};
+DECLARE_MULTICAST_DELEGATE_OneParam(FTaskEnded, UTAbilityTask*);
+
 
 
 USTRUCT(BlueprintType)

@@ -17,15 +17,13 @@ void UTHudWidget::BindAbility(UTAbility* Ability)
 	auto NewAbilityIcon = CreateWidget<UTAbilityActivationIconWidget>(this,
 		AbilityIconClass);
 
+	NewAbilityIcon->InitFromAbility(Ability);
+
 	if(!NewAbilityIcon)
 	{
 		return;
 	}
 	
-	if (Ability->AbilityIcon)
-	{
-		NewAbilityIcon->AbilityIcon->SetBrushFromTexture(Ability->AbilityIcon);
-	}
 
 	if (AbilityIconContainer)
 	{
