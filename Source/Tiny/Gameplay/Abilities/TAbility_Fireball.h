@@ -12,15 +12,20 @@
 DECLARE_EVENT( UTAbility_Fireball, HitEvent )
 
 /**
- * C++ Ability Example
+ * Example Projectile Ability in C++
  */
+
 UCLASS()
 class TINY_API UTAbility_Fireball : public UTAbility
 {
 	GENERATED_BODY()
 public:
+	UTAbility_Fireball();
+
 	virtual void ActivateAbility() override;
 
 	virtual void EndAbility() override;
+
+	virtual void InputPressed() override;
 
 };

@@ -3,14 +3,19 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameFramework/CheatManager.h"
 #include "UObject/Object.h"
-#include "THUD.generated.h"
+#include "TCheatManager.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class TINY_API UTHUD : public UObject
+class TINY_API UTCheatManager : public UCheatManager
 {
 	GENERATED_BODY()
+
+	
+	// UFUNCTION(exec)
+	// void Add();
 };

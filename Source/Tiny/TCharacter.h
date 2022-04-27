@@ -2,21 +2,25 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
+#include "TTypes.h"
 #include "GameFramework/Character.h"
 #include "TCharacter.generated.h"
 
+DECLARE_DELEGATE_OneParam(FAbilityActivateDelegate,
+                          const int32);
 
-UENUM()
-enum ETCharacterInputAction
-{
-	Attack,
-	Spell,
-	
-};
-
+class UTHudWidget;
 class UTAbilityComponent;
 class UTAbility;
+
+USTRUCT(BlueprintType)
+struct TINY_API FTAbilityBindInfo
+{
+	GENERATED_BODY()
+
+	// UPROPERTY(EditAnywhere)
+	// TEnumAsByte<ETCharacterInputAction> InputAction;
+};
 
 UCLASS()
 class TINY_API ATCharacter : public ACharacter
@@ -29,19 +33,31 @@ public:
 
 	UTAbilityComponent* AbilityComponent;
 
-	UPROPERTY(EditDefaultsOnly, Category=Gameplay)
-	TArray<TSubclassOf<UTAbility>> DefaultAbilities;
+	UPROPERTY(EditDefaultsOnly,
+		Category=Gameplay)
+	TMap<TEnumAsByte<ETCharacterInputAction>, TSubclassOf<UTAbility>> DefaultAbilities;
 
+
+	UPROPERTY(EditDefaultsOnly,
+		Category=UI)
+	TSubclassOf<UUserWidget> HudClass;
+
+
+	UTHudWidget* GetHUD();
 protected:
-	void RegisterDefaultAbilities();
+	void BindDefaultAbilities();
+	void CreateDefaultUI();
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-public:	
+	UTHudWidget* HUDWidget;
+
+
+public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
+	virtual void
+	SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 };

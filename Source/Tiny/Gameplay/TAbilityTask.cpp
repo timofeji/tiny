@@ -5,8 +5,13 @@
 
 void UTAbilityTask::EndTask()
 {
+	OnEndTask.Broadcast();
 }
 
 void UTAbilityTask::OnExecuteTask()
+{
+}
+
+void UTAbilityTask::InitTaskFromData(const FTAbilityTaskData& Data)
 {
 }

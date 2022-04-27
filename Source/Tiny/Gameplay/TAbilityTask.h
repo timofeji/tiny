@@ -6,6 +6,9 @@
 #include "UObject/Object.h"
 #include "TAbilityTask.generated.h"
 
+
+DECLARE_MULTICAST_DELEGATE(FTaskEnded);
+
 USTRUCT(BlueprintType)
 struct TINY_API FTAbilityAttribute
 {
@@ -53,4 +56,7 @@ public:
 
 	
 	virtual void OnExecuteTask();
+	void InitTaskFromData(const FTAbilityTaskData& Data);
+	
+	FTaskEnded OnEndTask;
 };

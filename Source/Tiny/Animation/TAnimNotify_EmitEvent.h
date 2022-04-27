@@ -4,14 +4,16 @@
 
 #include "CoreMinimal.h"
 #include "Animation/AnimNotifies/AnimNotify.h"
-#include "TAnimNotify_EmitTEvent.generated.h"
+#include "TAnimNotify_EmitEvent.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class TINY_API UTAnimNotify_EmitTEvent : public UAnimNotify
+class TINY_API UTAnimNotify_EmitEvent : public UAnimNotify
 {
 	GENERATED_BODY()
+
+	virtual void Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation) override;
 	
 };

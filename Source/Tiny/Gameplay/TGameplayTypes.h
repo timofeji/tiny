@@ -21,12 +21,14 @@
 class UTAbility;
 
 USTRUCT()
-struct FTCharacterRow : public FTableRowBase
+struct FTCharacterAbilityRow : public FTableRowBase
 {
 
 	GENERATED_BODY()
 	
 	UPROPERTY(EditAnywhere)
-	TMap<FName, TSoftObjectPtr<UAnimMontage>> Actions;
+	TSubclassOf<UTAbility> Ability;
 
+	UPROPERTY(EditAnywhere)
+	UTexture2D* AbilityIcon;
 };

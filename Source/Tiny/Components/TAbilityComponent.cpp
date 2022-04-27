@@ -23,7 +23,6 @@ void UTAbilityComponent::BeginPlay()
 	Super::BeginPlay();
 
 	// ...
-	
 }
 
 
@@ -40,13 +39,44 @@ void UTAbilityComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 
 void UTAbilityComponent::AddAbility(const TSubclassOf<UTAbility>& Class)
 {
-	if(GetOwnerRole() < ROLE_Authority)
-	{
-		return;
-	}
-	
-	UTAbility* NewAbility = NewObject<UTAbility>(GetOuter(), Class);
-	NewAbility->BindAbilityToCharacter(GetOuter());
-	ActiveAbilities.Add(NewAbility);
 }
 
+void UTAbilityComponent::ActivateAbility(const int32 AbilityIndex)
+{
+	UE_LOG(LogTemp,
+	       Display,
+	       TEXT("Attempting to activate ability index:%i"),
+	       AbilityIndex);
+}
+
+void UTAbilityComponent::SetupInput(UInputComponent* InputComponent)
+{
+	PlayerInputComponent = InputComponent;
+}
+
+void UTAbilityComponent::BindAbility(
+	TTuple<TEnumAsByte<ETCharacterInputAction>, TSubclassOf<UTAbility>> AbilityBind)
+{
+	ensure(PlayerInputComponent);
+
+	UTAbility* NewAbility = NewObject<UTAbility>(GetOuter(),
+	                                             AbilityBind.Value);
+
+	NewAbility->BindAbilityToCharacter(GetOwner());
+	OwnedAbilities.Add(NewAbility);
+	
+	const UEnum* EnumPtr = FindObject<UEnum>(ANY_PACKAGE, TEXT("ETCharacterInputAction"), true);
+	auto BindName = EnumPtr->GetNameStringByIndex((int32)AbilityBind.Key);
+	
+	
+	PlayerInputComponent->BindAction(*BindName,
+	                                 IE_Pressed,
+	                                 NewAbility,
+	                                 &UTAbility::InputPressed);
+	PlayerInputComponent->BindAction(*BindName,
+    	                                 IE_Released,
+    	                                 NewAbility,
+    	                                 &UTAbility::InputReleased);
+
+	OnAbilityBound.Broadcast(NewAbility);
+}

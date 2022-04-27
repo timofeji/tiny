@@ -2,3 +2,8 @@
 
 
 #include "TAbility_AOEHeal.h"
+
+
+UTAbility_AOEHeal::UTAbility_AOEHeal()
+{
+}

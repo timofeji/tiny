@@ -4,10 +4,14 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Tiny/TCharacter.h"
 #include "TAbilityComponent.generated.h"
 
 
 class UTAbility;
+
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnAbilityBound, UTAbility* )
+
 
 UCLASS(ClassGroup=(Custom),
 	meta=(BlueprintSpawnableComponent))
@@ -19,14 +23,27 @@ public:
 	// Sets default values for this component's properties
 	UTAbilityComponent();
 
-	TArray<UTAbility*> ActiveAbilities;
+	TArray<UTAbility*> OwnedAbilities;
+
+	
+	FOnAbilityBound OnAbilityBound;
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
+
+	
+	UInputComponent* PlayerInputComponent;
+
 
 public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
 	                           FActorComponentTickFunction* ThisTickFunction) override;
 	void AddAbility(const TSubclassOf<UTAbility>& Class);
+	
+	void ActivateAbility(const int32 AbilityIndex);
+	
+	void SetupInput(UInputComponent* InputComponent);
+	
+	void BindAbility(TTuple<TEnumAsByte<ETCharacterInputAction>, TSubclassOf<UTAbility>> AbilityBind);
 };

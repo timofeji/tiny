@@ -8,6 +8,11 @@
 #include "Tiny/Gameplay/AbilityTasks/TAbilityTask_PlayActionAndWaitForEvent.h"
 #include "Tiny/Gameplay/AbilityTasks/TAbilityTask_SpawnActorAndWaitForEvent.h"
 
+UTAbility_Fireball::UTAbility_Fireball()
+{
+	// AbilityIcon = ConstructorHelpers::FObjectFinder<UTexture2D>
+}
+
 void UTAbility_Fireball::ActivateAbility()
 {
 	Super::ActivateAbility();
@@ -23,15 +28,20 @@ void UTAbility_Fireball::ActivateAbility()
 
 	//Ability Flow 
 	ExecuteTask(UTAbilityTask_PlayActionAndWaitForEvent::StaticClass(), ActionTaskParams);
-	ExecuteTask(UTAbilityTask_SpawnActorAndWaitForEvent::StaticClass(), FireballTaskParams);
-	if(FireballTaskParams.GetField("Event"))
-	{
-		// auto TChar = Cast<ATCharacter>(FireballTaskParams.GetField("HitChar"));
-	}
+	// ExecuteTask(UTAbilityTask_SpawnActorAndWaitForEvent::StaticClass(), FireballTaskParams);
+	
 	EndAbility();
+
 }
 
 void UTAbility_Fireball::EndAbility()
 {
 	Super::EndAbility();
+}
+
+void UTAbility_Fireball::InputPressed()
+{
+	Super::InputPressed();
+
+	ActivateAbility();
 }

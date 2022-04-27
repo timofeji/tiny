@@ -5,6 +5,4 @@
 
 void UTAbilityTask_PlayActionAndWaitForEvent::OnExecuteTask()
 {
-
-	
 }

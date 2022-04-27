@@ -7,28 +7,69 @@
 
 void UTAbility::ActivateAbility()
 {
-	ensureAlwaysMsgf(TOwner, TEXT("%s(): tried to activate ability without an owner"),*FString
-	(__FUNCTION__) );
+	ensureAlwaysMsgf(TOwner,
+	                 TEXT("%s(): tried to activate ability without an owner"),
+	                 *FString
+	                 (__FUNCTION__));
 
+	OnActivateAbility();
 }
 
 void UTAbility::EndAbility()
 {
-	BeginDestroy();
-
 	//Remove all remaining tasks active tasks
-	for(auto Task : ActiveTasks)
+	for (auto Task : ActiveTasks)
 	{
 		Task->EndTask();
 		Task->BeginDestroy();
 	}
 }
 
-void UTAbility::ExecuteTask(TSubclassOf<UTAbilityTask>AbilityClass, FTAbilityTaskData& Data)
+void UTAbility::ActivateTask(UTAbilityTask* Task)
 {
-	UTAbilityTask* Task = NewObject<UTAbilityTask>(this, AbilityClass);
+	Task->OnExecuteTask();
+	// Task->OnEndTask.Add();
+	CurrentlyExecutingTask = Task;
+}
+
+void UTAbility::EndTask(UTAbilityTask* Task)
+{
+	if (Task == CurrentlyExecutingTask)
+	{
+		CurrentlyExecutingTask = nullptr;
+	}
+
+	UTAbilityTask* NewTaskToActivate;
+	TaskQueue.Dequeue(NewTaskToActivate);
+
+	ActivateTask(NewTaskToActivate);
+}
+
+
+void UTAbility::ExecuteTask(TSubclassOf<UTAbilityTask> TaskClass, FTAbilityTaskData Data)
+{
+	if (!TaskClass)
+	{
+		return;
+	}
+
+
+	auto Task = NewObject<UTAbilityTask>(GetOuter(),
+	                                     TaskClass);
+	Task->InitTaskFromData(Data);
+
+
 	ActiveTasks.Add(Task);
-	// UTGameplayGlobals::EmitEvent(FString::Format(""));
+
+	//If we're currently performing a task que task, otherwise activate it
+	if (CurrentlyExecutingTask)
+	{
+		TaskQueue.Enqueue(Task);
+	}
+	else
+	{
+		ActivateTask(Task);
+	}
 }
 
 void UTAbility::BindAbilityToCharacter(UObject* Owner)
