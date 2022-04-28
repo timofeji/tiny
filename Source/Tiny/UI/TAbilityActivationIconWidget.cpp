@@ -29,7 +29,7 @@ void UTAbilityActivationIconWidget::InitFromAbility(UTAbility* Ability)
 	Ability->OnAbilityActivated.AddLambda([this](FActivationData& Data)
 	{
 		PlayAnimation(ActivateAnimation);
-		CoolDownTime = Data.Cooldown;
+		AbilityCoolDown = Data.Cooldown;
 	});
 
 
@@ -37,6 +37,7 @@ void UTAbilityActivationIconWidget::InitFromAbility(UTAbility* Ability)
 	{
 		IconMatInstance->SetScalarParameterValue("Progress",
 		                                         0.f);
+		IconCoolDown = AbilityCoolDown;
 	});
 
 
@@ -54,11 +55,11 @@ void UTAbilityActivationIconWidget::NativeTick(const FGeometry& MyGeometry,
 	Super::NativeTick(MyGeometry,
 	                  InDeltaTime);
 
-	if (CoolDownTime > 0)
+	if ( IconCoolDown > 0)
 	{
-		CoolDownTime -= InDeltaTime;
+		IconCoolDown -= InDeltaTime;
 
 		IconMatInstance->SetScalarParameterValue("Progress",
-		                                         CoolDownTime);
+		                                         1 - (IconCoolDown/AbilityCoolDown));
 	}
 }

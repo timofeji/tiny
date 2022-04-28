@@ -31,11 +31,13 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
 	UImage* AbilityIcon;
+	
 
 	void InitFromAbility(UTAbility* Ability);
 
 	void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 protected:
-	float CoolDownTime;
+	float AbilityCoolDown;
+	float  IconCoolDown;
 	UMaterialInstanceDynamic* IconMatInstance;
 };
