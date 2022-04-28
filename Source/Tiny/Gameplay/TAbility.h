@@ -23,6 +23,7 @@ struct FActivationData
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FAbilityActivated, FActivationData&);
 DECLARE_MULTICAST_DELEGATE(FAbilityEnded);
+DECLARE_MULTICAST_DELEGATE(FAbilityCommitted);
 
 
 
@@ -48,6 +49,8 @@ public:
 	void OnActivateAbility();
 
 	void ExecuteTaskFlow();
+	
+	void CommitAbility();
 
 	bool ShouldExecuteFlow();
 	
@@ -59,7 +62,7 @@ public:
 
 	
 	UFUNCTION(BlueprintCallable)
-	void AddTask(TSubclassOf<UTAbilityTask> TaskClass, FTAbilityTaskData Data);
+	void AddExecutionTask(TSubclassOf<UTAbilityTask> TaskClass, FTAbilityTaskData Data);
 
 	void BindAbilityToCharacter(UObject* Owner);
 
@@ -75,6 +78,7 @@ public:
 	FAbilityActivated OnAbilityActivated;
 	
 	FAbilityEnded OnAbilityEnded;
+	FAbilityCommitted OnAbilityCommitted;
 
 
 	TArray<UTAbilityTask*> ActiveTasks;

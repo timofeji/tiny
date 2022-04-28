@@ -22,20 +22,21 @@ struct TINY_API FTAbilityTaskData
 
 	
 	UPROPERTY(EditAnywhere)
-	TMap<FName, FTAbilityAttribute> TaskAttributes;
+	TMap<FName,FTAbilityAttribute> TaskAttributes;
 
 
 	template <typename FieldType>
-	void AddField(FName FieldName, FieldType FieldValue)
+	void AddField(FName FieldName, void* FieldValue)
 	{
 		FTAbilityAttribute NewAttributeField;
-		
+		NewAttributeField.ValuePtr = FieldValue;
 		TaskAttributes.FindOrAdd(FieldName, NewAttributeField);
 	}
 
-	bool GetField(FName FieldName)
+	template <typename FieldType>
+	FieldType* GetField(FName FieldName)
 	{
-		return true;
+		return static_cast<FieldType*>(TaskAttributes[FieldName].ValuePtr);
 	}
 };
 

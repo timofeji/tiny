@@ -7,6 +7,10 @@ void UTAbilityTask_SpawnActorAndWaitForEvent::OnExecuteTask(UObject* OwningObjec
 {
 	Super::OnExecuteTask(OwningObject);
 
-	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("SPAWN:")));
+	auto Damage = *TaskData.GetField<int32>(FName("Damage"));
+	GEngine->AddOnScreenDebugMessage(-1,
+	                                 5.0f,
+	                                 FColor::Red,
+	                                 FString::Printf(TEXT("Damage :%i"), Damage));
 	EndTask();
 }

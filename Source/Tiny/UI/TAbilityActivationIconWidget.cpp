@@ -28,28 +28,37 @@ void UTAbilityActivationIconWidget::InitFromAbility(UTAbility* Ability)
 
 	Ability->OnAbilityActivated.AddLambda([this](FActivationData& Data)
 	{
-		IconMatInstance->SetScalarParameterValue("Progress", 0.f);
 		PlayAnimation(ActivateAnimation);
-		CoolDownTime= 3.f;
+		CoolDownTime = Data.Cooldown;
 	});
+
+
+	Ability->OnAbilityCommitted.AddLambda([this]()
+	{
+		IconMatInstance->SetScalarParameterValue("Progress",
+		                                         0.f);
+	});
+
 
 	Ability->OnAbilityEnded.AddLambda([this]
 	{
 		PlayAnimation(EndActivationAnimation);
-		IconMatInstance->SetScalarParameterValue("Progress", 1.f);
+		IconMatInstance->SetScalarParameterValue("Progress",
+		                                         1.f);
 	});
 }
 
 void UTAbilityActivationIconWidget::NativeTick(const FGeometry& MyGeometry,
-	float InDeltaTime)
+                                               float InDeltaTime)
 {
 	Super::NativeTick(MyGeometry,
 	                  InDeltaTime);
 
-	if(CoolDownTime > 0)
+	if (CoolDownTime > 0)
 	{
 		CoolDownTime -= InDeltaTime;
 
-		IconMatInstance->SetScalarParameterValue("Progress", CoolDownTime);
+		IconMatInstance->SetScalarParameterValue("Progress",
+		                                         CoolDownTime);
 	}
 }

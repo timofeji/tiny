@@ -22,7 +22,14 @@ class TINY_API UTAbility_Fireball : public UTAbility
 public:
 	UTAbility_Fireball();
 
+	UPROPERTY(EditAnywhere)
+	int32 Damage = 36;
+
 	
+	UPROPERTY(EditAnywhere)
+	UAnimMontage* FireballMontage;
+
+
 	virtual void ActivateAbility() override;
 
 	virtual void EndAbility() override;

@@ -12,14 +12,14 @@ void UTAbility::ActivateAbility()
 	{
 		return;
 	}
-
-
+	
 	ensureAlwaysMsgf(TOwner,
 	                 TEXT("%s(): tried to activate ability without an owner"),
 	                 *FString
 	                 (__FUNCTION__));
 
 	FActivationData ActivationData;
+	ActivationData.Cooldown = 3.f;
 
 	OnActivateAbility();
 	OnAbilityActivated.Broadcast(ActivationData);
@@ -27,7 +27,13 @@ void UTAbility::ActivateAbility()
 
 void UTAbility::ExecuteTaskFlow()
 {
-	
+	auto NextTask = PendingTasks.Pop();
+	ActivateTask(NextTask);
+}
+
+void UTAbility::CommitAbility()
+{
+	OnAbilityCommitted.Broadcast();
 }
 
 bool UTAbility::ShouldExecuteFlow()
@@ -70,7 +76,7 @@ void UTAbility::OnTaskEnded(UTAbilityTask* Task)
 }
 
 //Queues up an ability task into the execution flow
-void UTAbility::AddTask(TSubclassOf<UTAbilityTask> TaskClass, FTAbilityTaskData Data)
+void UTAbility::AddExecutionTask(TSubclassOf<UTAbilityTask> TaskClass, FTAbilityTaskData Data)
 {
 	if (!TaskClass)
 	{

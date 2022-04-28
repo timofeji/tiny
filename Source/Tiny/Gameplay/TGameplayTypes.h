@@ -39,6 +39,7 @@ struct TINY_API FTAbilityAttribute
 {
 	
 	GENERATED_BODY()
-	// template <typename FieldType>;
-	// typedef;
+
+	void* TypePtr;
+	void* ValuePtr;
 };
