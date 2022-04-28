@@ -22,6 +22,7 @@ class TINY_API UTAbility_Fireball : public UTAbility
 public:
 	UTAbility_Fireball();
 
+	
 	virtual void ActivateAbility() override;
 
 	virtual void EndAbility() override;

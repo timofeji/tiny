@@ -17,7 +17,6 @@
 // Sets default values
 ATCharacter::ATCharacter()
 {
-	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
 
@@ -61,8 +60,9 @@ void ATCharacter::CreateDefaultUI()
 
 	auto PC = Cast<APlayerController>(UGameplayStatics::GetPlayerController(GetWorld(),
 		0));
-	
-	HUDWidget = CreateWidget<UTHudWidget>(PC,HudClass);
+
+	HUDWidget = CreateWidget<UTHudWidget>(PC,
+	                                      HudClass);
 	HUDWidget->AddToViewport();
 }
 

@@ -12,8 +12,19 @@ class UTexture2D;
 class UTAbilityTask;
 
 
-DECLARE_MULTICAST_DELEGATE(FAbilityActivated);
+USTRUCT()
+struct FActivationData
+{
+	GENERATED_BODY()
+
+	float Cooldown;
+};
+
+
+DECLARE_MULTICAST_DELEGATE_OneParam(FAbilityActivated, FActivationData&);
 DECLARE_MULTICAST_DELEGATE(FAbilityEnded);
+
+
 
 /**
  * 
@@ -26,9 +37,9 @@ class TINY_API UTAbility : public UObject
 public:
 	UPROPERTY(EditAnywhere)
 	UTexture2D* AbilityIcon;
-	TArray<UTAbilityTask*>PendingTasks;
 	
 	bool bIsPendingActivation = false;
+	
 
 	UFUNCTION(BlueprintCallable)
 	virtual void ActivateAbility();
@@ -36,6 +47,10 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnActivateAbility();
 
+	void ExecuteTaskFlow();
+
+	bool ShouldExecuteFlow();
+	
 	UFUNCTION(BlueprintCallable)
 	virtual void EndAbility();
 
@@ -44,7 +59,7 @@ public:
 
 	
 	UFUNCTION(BlueprintCallable)
-	void ExecuteTask(TSubclassOf<UTAbilityTask> TaskClass, FTAbilityTaskData Data);
+	void AddTask(TSubclassOf<UTAbilityTask> TaskClass, FTAbilityTaskData Data);
 
 	void BindAbilityToCharacter(UObject* Owner);
 
@@ -58,6 +73,7 @@ public:
 	virtual void InputPressed() { OnInputPressed(); }
 
 	FAbilityActivated OnAbilityActivated;
+	
 	FAbilityEnded OnAbilityEnded;
 
 
@@ -65,7 +81,7 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	TEnumAsByte<ETCharacterInputAction> ActivationInputIndex;
-	TQueue<UTAbilityTask*> TaskQueue;
+	TArray<UTAbilityTask*> PendingTasks;
 
 	UTAbilityTask* CurrentlyExecutingTask;
 

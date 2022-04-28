@@ -19,24 +19,37 @@ void UTAbility::ActivateAbility()
 	                 *FString
 	                 (__FUNCTION__));
 
+	FActivationData ActivationData;
+
 	OnActivateAbility();
+	OnAbilityActivated.Broadcast(ActivationData);
+}
+
+void UTAbility::ExecuteTaskFlow()
+{
+	
+}
+
+bool UTAbility::ShouldExecuteFlow()
+{
+	return bIsPendingActivation || PendingTasks.Num() > 0;
 }
 
 void UTAbility::EndAbility()
 {
-	//Remove all remaining tasks active tasks
-	for (auto Task : ActiveTasks)
+	if(ShouldExecuteFlow())
 	{
-		Task->EndTask();
-		Task->BeginDestroy();
+		ExecuteTaskFlow();
 	}
+	
+	OnAbilityEnded.Broadcast();
 }
 
 void UTAbility::ActivateTask(UTAbilityTask* Task)
 {
 	Task->OnEndTask.AddUObject(this,
-	                       &UTAbility::OnTaskEnded);
-	
+	                           &UTAbility::OnTaskEnded);
+
 	CurrentlyExecutingTask = Task;
 	Task->OnExecuteTask(TOwner);
 }
@@ -45,19 +58,19 @@ void UTAbility::ActivateTask(UTAbilityTask* Task)
 //and execute the next one in the queue
 void UTAbility::OnTaskEnded(UTAbilityTask* Task)
 {
-	Task->BeginDestroy();
-	
-	UTAbilityTask* NewTaskToActivate;
-	TaskQueue.Dequeue(NewTaskToActivate);
-
-	if (NewTaskToActivate)
+	if (PendingTasks.Num() > 0)
 	{
-		ActivateTask(NewTaskToActivate);
+		UTAbilityTask* NewTaskToActivate = PendingTasks.Pop(true);
+
+		if (NewTaskToActivate)
+		{
+			ActivateTask(NewTaskToActivate);
+		}
 	}
 }
 
-
-void UTAbility::ExecuteTask(TSubclassOf<UTAbilityTask> TaskClass, FTAbilityTaskData Data)
+//Queues up an ability task into the execution flow
+void UTAbility::AddTask(TSubclassOf<UTAbilityTask> TaskClass, FTAbilityTaskData Data)
 {
 	if (!TaskClass)
 	{
@@ -68,19 +81,7 @@ void UTAbility::ExecuteTask(TSubclassOf<UTAbilityTask> TaskClass, FTAbilityTaskD
 	                                               NAME_None,
 	                                               RF_StrongRefOnFrame);
 	Task->InitTaskFromData(Data);
-
-
-	ActiveTasks.Add(Task);
-
-	//If we're currently performing a task que task, otherwise activate it
-	if (CurrentlyExecutingTask)
-	{
-		TaskQueue.Enqueue(Task);
-	}
-	else
-	{
-		ActivateTask(Task);
-	}
+	PendingTasks.Add(Task);
 }
 
 void UTAbility::BindAbilityToCharacter(UObject* Owner)

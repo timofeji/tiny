@@ -18,17 +18,24 @@ class TINY_API UTAbilityActivationIconWidget : public UUserWidget
 public:
 
 	
-
+	virtual void NativeConstruct() override;
 	
 	UPROPERTY(EditAnywhere)
 	UMaterialInterface* IconMaterial;
+	
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	UWidgetAnimation* ActivateAnimation;
+	
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	UWidgetAnimation* EndActivationAnimation;
 
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
 	UImage* AbilityIcon;
 
 	void InitFromAbility(UTAbility* Ability);
 
+	void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 protected:
+	float CoolDownTime;
 	UMaterialInstanceDynamic* IconMatInstance;
-	
 };

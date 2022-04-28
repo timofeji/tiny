@@ -43,10 +43,14 @@ void UTAbility_Fireball::ActivateAbility()
 	FireballTaskParams.AddField<uint32>("Damage",
 	                                    35);
 
-	//Ability Flow 
-	// ExecuteTask(UTAbilityTask_PlayActionAndWaitForEvent::StaticClass(),
-	//             ActionTaskParams);
-	ExecuteTask(UTAbilityTask_SpawnActorAndWaitForEvent::StaticClass(), FireballTaskParams);
+	//Ability Flow
+	AddTask(UTAbilityTask_SpawnActorAndWaitForEvent::StaticClass(),
+	                       FireballTaskParams);
+
+	AddTask(UTAbilityTask_PlayActionAndWaitForEvent::StaticClass(),
+	                       ActionTaskParams);
+
+	EndAbility();
 }
 
 void UTAbility_Fireball::EndAbility()
