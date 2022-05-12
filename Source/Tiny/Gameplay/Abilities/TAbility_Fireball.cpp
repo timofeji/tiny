@@ -18,9 +18,11 @@ UTAbility_Fireball::UTAbility_Fireball()
 
 		FConstructorStatics()
 			: Icon(
-				TEXT("Texture2D'/Game/UI/IconTextures/T_UI_Fireball.T_UI_Fireball'")),
+				TEXT("Texture2D'/Game/UI/IconTextures/T_UI_Fireball.T_UI_Fireball'"))
+			,
 			Montage(
-				TEXT("AnimMontage'/Game/Characters/Mannequins/Meshes/AM_Fireball.AM_Fireball'"))
+				TEXT(
+					"AnimMontage'/Game/Characters/Mannequins/Meshes/AM_Fireball.AM_Fireball'"))
 		{
 		}
 	};
@@ -37,17 +39,15 @@ void UTAbility_Fireball::ActivateAbility()
 
 	//Ability Data
 	FTAbilityTaskData ActionTaskParams;
-	ActionTaskParams.AddField<FString>("Event",
-	                                   "Fireball");
-	ActionTaskParams.AddField<UAnimMontage>("Montage",
-	                                        FireballMontage);
+	ActionTaskParams.AddField("Event","Fireball");
+	ActionTaskParams.AddField("Montage", FireballMontage);
 	FTAbilityTaskData FireballTaskParams;
-	FireballTaskParams.AddField<FString>("Event",
-	                                     "Hit");
+	FireballTaskParams.AddField("Event","Hit");
+
 	// FireballTaskParams.AddField<FVector>("TargetInfo", );
 
-	FireballTaskParams.AddField<uint32>(FName("Damage"),
-	                                    &Damage);
+	FireballTaskParams.AddField(FName("Damage"),
+	                            &Damage);
 
 	//Ability Flow
 	AddExecutionTask(UTAbilityTask_SpawnActorAndWaitForEvent::StaticClass(),
@@ -69,6 +69,6 @@ void UTAbility_Fireball::EndAbility()
 void UTAbility_Fireball::InputPressed()
 {
 	Super::InputPressed();
-
+	
 	ActivateAbility();
 }

@@ -23,10 +23,19 @@ void UTHudWidget::BindAbility(UTAbility* Ability)
 	{
 		return;
 	}
-	
+
+	if(WeaponIconContainer && Ability->HasTag("Weapon"))
+	{
+		WeaponIconContainer->AddChildToHorizontalBox(NewAbilityIcon);
+		return;
+	}
 
 	if (AbilityIconContainer)
 	{
 		AbilityIconContainer->AddChildToHorizontalBox(NewAbilityIcon);
 	}
+}
+
+void UTHudWidget::RemoveAbility(UTAbility* Ability)
+{
 }

@@ -22,12 +22,15 @@ class TINY_API UTHudWidget : public UUserWidget
 public:
 
 	virtual void NativeConstruct() override;
-	
+
 
 	TArray<UTAbilityActivationIconWidget*> AbilityIcons;
 
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
 	UHorizontalBox* AbilityIconContainer;
+	
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+	UHorizontalBox* WeaponIconContainer;
 	
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<UUserWidget> AbilityIconClass;
@@ -35,4 +38,7 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void BindAbility(UTAbility* Ability);
+	
+	UFUNCTION(BlueprintCallable)
+	void RemoveAbility(UTAbility* Ability);
 };

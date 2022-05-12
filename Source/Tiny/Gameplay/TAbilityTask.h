@@ -25,7 +25,6 @@ struct TINY_API FTAbilityTaskData
 	TMap<FName,FTAbilityAttribute> TaskAttributes;
 
 
-	template <typename FieldType>
 	void AddField(FName FieldName, void* FieldValue)
 	{
 		FTAbilityAttribute NewAttributeField;

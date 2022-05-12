@@ -2,6 +2,8 @@
 
 
 #include "TGamemode.h"
+#include "TCharacter.h"
+#include "Components/TAbilitySystemComponent.h"
 
 
 // Sets default values
@@ -22,5 +24,16 @@ void ATGamemode::BeginPlay()
 void ATGamemode::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+}
+
+void ATGamemode::RestartPlayer(AController* NewPlayer)
+{
+	Super::RestartPlayer(NewPlayer);
+	
+	auto TChar = Cast<ATCharacter>(NewPlayer->GetPawn());
+	if(!IsValid(TChar))
+	{
+		return;
+	}
 }
 

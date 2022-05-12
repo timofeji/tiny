@@ -9,5 +9,7 @@ void UTAnimNotify_EmitEvent::Notify(USkeletalMeshComponent* MeshComp,
 	Super::Notify(MeshComp,
 	              Animation);
 
+	// MeshComp->GetOwner()
+
 	
 }

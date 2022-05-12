@@ -5,31 +5,41 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "Tiny/TCharacter.h"
-#include "TAbilityComponent.generated.h"
+#include "TAbilitySystemComponent.generated.h"
 
 
 class UTAbility;
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnAbilityBound, UTAbility* )
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnAbilityRemoved, UTAbility* )
 
 
 UCLASS(ClassGroup=(Custom),
 	meta=(BlueprintSpawnableComponent))
-class TINY_API UTAbilityComponent : public UActorComponent
+class TINY_API UTAbilitySystemComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
 public:
 	// Sets default values for this component's properties
-	UTAbilityComponent();
+	UTAbilitySystemComponent();
+	
+	UPROPERTY(EditAnywhere, Category=Gameplay)
+	TMap<TEnumAsByte<ETCharacterInputAction>, TSubclassOf<UTAbility>> DefaultAbilities;
 
 	TArray<UTAbility*> OwnedAbilities;
 
 	
 	FOnAbilityBound OnAbilityBound;
+	
+	FOnAbilityRemoved OnAbilityRemoved;
+	
+	TArray<uint8> InputQueue;
 protected:
-	// Called when the game starts
-	virtual void BeginPlay() override;
+
+	virtual void PostInitProperties() override;
+	
+	TMap<ETCharacterInputAction, UTAbility*> AbilityBinds;
 
 	
 	UInputComponent* PlayerInputComponent;
@@ -43,7 +53,18 @@ public:
 	
 	void ActivateAbility(const int32 AbilityIndex);
 	
-	void SetupInput(UInputComponent* InputComponent);
+	void SetupDefaultInput(UInputComponent* InputComponent);
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerAbilityInputPressed(ETCharacterInputAction AbilitInputIndex);
 	
+	
+	void AbilityInputPressed(ETCharacterInputAction AbilityInputIndex);
+	
+	void AbilityInputReleased(ETCharacterInputAction AbilityInput);
+
 	void BindAbility(TTuple<TEnumAsByte<ETCharacterInputAction>, TSubclassOf<UTAbility>> AbilityBind);
+	
+	void BindDefaultAbilities();
+	
 };

@@ -15,6 +15,6 @@ UCLASS()
 class TINY_API UTAbility_AOEHeal : public UTAbility
 {
 	GENERATED_BODY()
-
+public:
 	UTAbility_AOEHeal();
 };

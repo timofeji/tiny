@@ -15,7 +15,6 @@ void UTAbilityActivationIconWidget::InitFromAbility(UTAbility* Ability)
 {
 	if (Ability->AbilityIcon)
 	{
-		// Ability->AbilityIcon
 		IconMatInstance = UMaterialInstanceDynamic::Create(IconMaterial,
 		                                                   this);
 		IconMatInstance->SetScalarParameterValue("Progress",

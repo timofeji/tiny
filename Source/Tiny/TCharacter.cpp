@@ -4,34 +4,20 @@
 #include "TCharacter.h"
 
 #include "Blueprint/UserWidget.h"
-#include "Components/TAbilityComponent.h"
+#include "Components/TAbilitySystemComponent.h"
 #include "Gameplay/TAbility.h"
 #include "Kismet/GameplayStatics.h"
 #include "UI/THudWidget.h"
-
-//
-// ENUM_RANGE_BY_COUNT(ETCharacterInputAction,
-//                     ETCharacterInputAction::MAX)
 
 
 // Sets default values
 ATCharacter::ATCharacter()
 {
 	PrimaryActorTick.bCanEverTick = true;
+	bReplicates = true;
 
-
-	AbilityComponent = CreateDefaultSubobject<UTAbilityComponent>(
+	AbilityComponent = CreateDefaultSubobject<UTAbilitySystemComponent>(
 		TEXT("Ability Component"));
-
-	if (ensureAlwaysMsgf(AbilityComponent,
-	                     TEXT("TAbilitySystem not initialized properly")))
-	{
-		AbilityComponent->OnAbilityBound.AddLambda([this](UTAbility* Ability)
-			{
-				GetHUD()->BindAbility(Ability);
-			}
-		);
-	}
 }
 
 UTHudWidget* ATCharacter::GetHUD()
@@ -39,15 +25,35 @@ UTHudWidget* ATCharacter::GetHUD()
 	return HUDWidget;
 }
 
-void ATCharacter::BindDefaultAbilities()
+void ATCharacter::ClientInit()
 {
-	check(AbilityComponent)
-	AbilityComponent->SetupInput(InputComponent);
+	AbilityComponent->BindDefaultAbilities();
+	
+	CreateDefaultUI();
 
-	for (auto AbilityBind : DefaultAbilities)
+	if (ensureAlwaysMsgf(AbilityComponent,
+						 TEXT("TAbilitySystem not initialized properly")))
 	{
-		AbilityComponent->BindAbility(AbilityBind);
+		AbilityComponent->OnAbilityBound.AddLambda([this](UTAbility* Ability)
+		{
+			if(HUDWidget)
+			{
+				HUDWidget->BindAbility(Ability);
+			}
+		});
+
+		AbilityComponent->OnAbilityRemoved.AddLambda([this](UTAbility* Ability)
+		{
+			if(HUDWidget)
+			{
+				HUDWidget->RemoveAbility(Ability);
+			}
+		});
 	}
+
+	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("CLIENT INIT"));
+
+	AbilityComponent->SetupDefaultInput(InputComponent);
 }
 
 void ATCharacter::CreateDefaultUI()
@@ -66,19 +72,29 @@ void ATCharacter::CreateDefaultUI()
 	HUDWidget->AddToViewport();
 }
 
+
 // Called when the game starts or when spawned
 void ATCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-
-	CreateDefaultUI();
-	BindDefaultAbilities();
+	
 }
 
-// Called every frame
-void ATCharacter::Tick(float DeltaTime)
+void ATCharacter::MoveForward(float Value)
 {
-	Super::Tick(DeltaTime);
+	FRotator ControlRot = GetControlRotation();
+	ControlRot.Pitch = 0.0f;
+	ControlRot.Roll = 0.0f;
+	AddMovementInput(ControlRot.Vector(), Value);
+}
+
+void ATCharacter::MoveRight(float Value)
+{
+	FRotator ControlRot = GetControlRotation();
+	ControlRot.Pitch = 0.0f;
+	ControlRot.Roll = 0.0f;
+	FVector RightVector = FRotationMatrix(ControlRot).GetScaledAxis(EAxis::Y);
+	AddMovementInput(RightVector, Value);
 }
 
 // Called to bind functionality to input
@@ -86,9 +102,10 @@ void ATCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-
-	if (!AbilityComponent)
-	{
-		return;
-	}
+	PlayerInputComponent->BindAxis("MoveForward",
+	                               this,
+	                               &ATCharacter::MoveForward);
+	PlayerInputComponent->BindAxis("MoveRight",
+	                               this,
+	                               &ATCharacter::MoveRight);
 }

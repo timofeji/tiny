@@ -3,6 +3,7 @@
 
 #include "TPlayerController.h"
 
+#include "TCharacter.h"
 #include "TCheatManager.h"
 
 
@@ -26,5 +27,18 @@ void ATPlayerController::BeginPlay()
 void ATPlayerController::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+}
+
+void ATPlayerController::ClientRestart_Implementation(APawn* NewPawn)
+{
+	Super::ClientRestart_Implementation(NewPawn);
+
+	TChar = Cast<ATCharacter>(NewPawn);
+	if(!TChar)
+	{
+		return;
+	}
+
+	TChar->ClientInit();
 }
 

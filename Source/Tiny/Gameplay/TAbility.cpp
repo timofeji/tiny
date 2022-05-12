@@ -6,9 +6,13 @@
 #include "Kismet/GameplayStatics.h"
 #include "Tiny/TGameplayGlobals.h"
 
+UTAbility::UTAbility()
+{
+}
+
 void UTAbility::ActivateAbility()
 {
-	if (bIsPendingActivation)
+	if (bIsPendingExecution || CoolDown > 0 )
 	{
 		return;
 	}
@@ -20,33 +24,35 @@ void UTAbility::ActivateAbility()
 
 	FActivationData ActivationData;
 	ActivationData.Cooldown = 3.f;
+	CoolDown = 3.f;
 
 	OnActivateAbility();
 	OnAbilityActivated.Broadcast(ActivationData);
+
+	bIsPendingExecution = true;
 }
 
 void UTAbility::ExecuteTaskFlow()
 {
-	auto NextTask = PendingTasks.Pop();
-	ActivateTask(NextTask);
+	bIsExecuting = true;
+	// auto NextTask = PendingTasks.Pop();
+	
 }
 
 void UTAbility::CommitAbility()
 {
 	OnAbilityCommitted.Broadcast();
+	ExecuteTaskFlow();
 }
 
 bool UTAbility::ShouldExecuteFlow()
 {
-	return bIsPendingActivation || PendingTasks.Num() > 0;
+	return bIsPendingExecution || PendingTasks.Num() > 0;
 }
 
 void UTAbility::EndAbility()
 {
-	if(ShouldExecuteFlow())
-	{
-		ExecuteTaskFlow();
-	}
+	bIsExecuting = true;
 	
 	OnAbilityEnded.Broadcast();
 }
@@ -73,6 +79,26 @@ void UTAbility::OnTaskEnded(UTAbilityTask* Task)
 			ActivateTask(NewTaskToActivate);
 		}
 	}
+}
+
+void UTAbility::Tick(float DeltaTime)
+{
+	AbilityTick(DeltaTime);
+
+	if(CoolDown > 0)
+	{
+		CoolDown -= DeltaTime;
+	}
+}
+
+bool UTAbility::IsTickable() const
+{
+	return bIsExecuting;
+}
+
+TStatId UTAbility::GetStatId() const
+{
+	return UObject::GetStatID();
 }
 
 //Queues up an ability task into the execution flow

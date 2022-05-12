@@ -6,6 +6,8 @@
 #include "GameFramework/Actor.h"
 #include "TPlayerController.generated.h"
 
+class ATCharacter;
+
 UCLASS()
 class TINY_API ATPlayerController : public APlayerController
 {
@@ -18,8 +20,11 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
+	
+	ATCharacter* TChar;
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
+	virtual void ClientRestart_Implementation(APawn* NewPawn) override;
 };

@@ -11,6 +11,5 @@ void UTAbilityTask_PlayActionAndWaitForEvent::OnExecuteTask(UObject* OwningObjec
 	const auto Montage = TaskData.GetField<UAnimMontage>("Montage");
 	const auto TChar = Cast<ATCharacter>(OwningObject);
 	TChar->PlayAnimMontage(Montage);
-	// UTGameplayGlobals::Bind
 	EndTask();
 }
