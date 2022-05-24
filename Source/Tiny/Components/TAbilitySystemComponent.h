@@ -63,7 +63,7 @@ public:
 	
 	void AbilityInputReleased(ETCharacterInputAction AbilityInput);
 
-	void BindAbility(TTuple<TEnumAsByte<ETCharacterInputAction>, TSubclassOf<UTAbility>> AbilityBind);
+	void BindAbility(TTuple<ETCharacterInputAction, TSubclassOf<UTAbility>> AbilityBind);
 	
 	void BindDefaultAbilities();
 	

@@ -24,6 +24,7 @@ void UTAbilitySystemComponent::PostInitProperties()
 }
 
 
+
 // Called every frame
 void UTAbilitySystemComponent::TickComponent(float DeltaTime, ELevelTick TickType,
                                        FActorComponentTickFunction* ThisTickFunction)
@@ -54,9 +55,9 @@ void UTAbilitySystemComponent::SetupDefaultInput(UInputComponent* InputComponent
 
 	if(AbilityBinds.Num() > 0)
 	{
-		const UEnum* EnumPtr = FindObject<UEnum>(ANY_PACKAGE, TEXT("ETCharacterInputAction"), true);
 		for(auto AbilityBind :AbilityBinds)
 		{
+            const UEnum* EnumPtr = FindObject<UEnum>(ANY_PACKAGE, TEXT("ETCharacterInputAction"), true);
 			auto BindName = EnumPtr->GetNameStringByIndex((int32)AbilityBind.Key);
 			
 			// Bind the press event.
@@ -119,10 +120,16 @@ void UTAbilitySystemComponent::AbilityInputReleased(ETCharacterInputAction Abili
 }
 
 void UTAbilitySystemComponent::BindAbility(
-	TTuple<TEnumAsByte<ETCharacterInputAction>, TSubclassOf<UTAbility>> AbilityBind)
+	TTuple<ETCharacterInputAction, TSubclassOf<UTAbility>> AbilityBind)
 {
+
+	
 	UTAbility* NewAbility = NewObject<UTAbility>(GetOuter(),
-	                                             AbilityBind.Value);
+	                                             AbilityBind.Value,
+												 NAME_None,
+                                                 RF_Transient);
+	                                             
+	
 	NewAbility->BindAbilityToCharacter(GetOwner());
 	OwnedAbilities.Add(NewAbility);
 

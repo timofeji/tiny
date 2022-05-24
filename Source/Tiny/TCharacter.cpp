@@ -63,7 +63,6 @@ void ATCharacter::CreateDefaultUI()
 		return;
 	}
 
-
 	auto PC = Cast<APlayerController>(UGameplayStatics::GetPlayerController(GetWorld(),
 		0));
 
@@ -72,12 +71,10 @@ void ATCharacter::CreateDefaultUI()
 	HUDWidget->AddToViewport();
 }
 
-
 // Called when the game starts or when spawned
 void ATCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
 void ATCharacter::MoveForward(float Value)

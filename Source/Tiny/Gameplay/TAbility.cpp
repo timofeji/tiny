@@ -79,6 +79,8 @@ void UTAbility::OnTaskEnded(UTAbilityTask* Task)
 			ActivateTask(NewTaskToActivate);
 		}
 	}
+	
+	bIsExecuting = false;
 }
 
 void UTAbility::Tick(float DeltaTime)
@@ -119,4 +121,9 @@ void UTAbility::AddExecutionTask(TSubclassOf<UTAbilityTask> TaskClass, FTAbility
 void UTAbility::BindAbilityToCharacter(UObject* Owner)
 {
 	TOwner = Owner;
+}
+
+bool UTAbility::HasTag(FString Tag)
+{
+	return false;
 }
