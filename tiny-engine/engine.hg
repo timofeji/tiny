@@ -1,0 +1,460 @@
+// counter: int = 0;
+// name: string = "Jon";
+// average: float = 0.5 * (x+y);
+
+// // A function that accepts 3 floats as parameters and returns a float
+// sum :: (x: float, y: float, z: float) -> float {
+//     return x + y + z;
+// }
+
+// print("Sum: %\n", sum(1, 2, 3));
+
+// Vector3 :: struct {
+//     x: float;
+//     y: float;
+//     z: float;
+// }
+
+/*
+    D3DDDDDDDDDDD
+  This example only compiles and runs on Windows! (D3D11 does not work anywhere else!)
+
+ */
+
+#import "Basic";
+#import "d3d11";
+#import "D3dcompiler";
+#import "Windows";
+#import "Windows_Utf8";
+#import "Math";                         // For Vector3
+#import "dxgi";
+// #import "String"; // for free(string)
+
+// This is what Microsoft considers a minimul D3D11 example. Yuck!
+
+DEBUG :: 0;
+
+hwnd : HWND;
+driver_type := D3D_DRIVER_TYPE_NULL;
+feature_level := D3D_FEATURE_LEVEL_11_0;
+
+d3d_device         : *ID3D11Device;
+d3d_context        : *ID3D11DeviceContext;
+swap_chain         : *IDXGISwapChain;
+render_target_view : *ID3D11RenderTargetView;
+vertex_shader      : *ID3D11VertexShader;
+pixel_shader       : *ID3D11PixelShader;
+vertex_layout      : *ID3D11InputLayout;
+vertex_buffer      : *ID3D11Buffer;
+
+
+shader_text :: #string END
+float4 VS(float4 Pos : POSITION) : SV_POSITION {
+    return Pos;
+}
+
+float4 PS(float4 Pos : SV_POSITION) : SV_Target {
+    return float4(.1, 1, .8, 1);
+}
+END
+
+
+main :: () {
+    
+    if !init_window() {
+        print ("init_window failed!\n");
+        return;
+    }
+    
+    if !init_device() {
+        print ("init_device failed!\n");
+        cleanup_device();
+        return;
+    }
+    
+
+    msg : MSG;
+    while msg.message != WM_QUIT {
+        if PeekMessageW(*msg, null, 0, 0, PM_REMOVE) {
+            TranslateMessage( *msg );
+            DispatchMessageW( *msg );
+        }
+        else {
+            render();
+        }
+    }
+
+    cleanup_device();
+}
+
+
+#scope_file
+ 
+//-------------------------------------------------------------------------------------- 
+// Register class and create window 
+//-------------------------------------------------------------------------------------- 
+
+
+init_window :: () -> bool {
+
+    // Register class 
+    wcex : WNDCLASSEXW;
+    wcex.cbSize = size_of(WNDCLASSEXW);
+    wcex.style = CS_HREDRAW | CS_VREDRAW; 
+    wcex.lpfnWndProc = xx WndProc;
+    wcex.cbClsExtra = 0; 
+    wcex.cbWndExtra = 0; 
+    wcex.hInstance = null; 
+    wcex.hIcon = LoadIconW(null, utf8_to_wide("APPICON"));
+    wcex.hCursor = LoadCursorW(null, cast(*u8) IDC_ARROW); 
+    wcex.hbrBackground = null; //cast(HBRUSH) GetStockObject(WHITE_BRUSH);
+    wcex.lpszMenuName = null; 
+    wcex.lpszClassName = utf8_to_wide("JaiWindowClass");
+
+    if RegisterClassExW(*wcex) == 0 {
+        print ("RegisterClassExA failed!\n");
+        return false; 
+    }
+ 
+
+    // Create window 
+    //RECT rc = { 0, 0, 800, 600 }; // @@
+    rc : RECT;
+    rc.left = 0;
+    rc.top = 0;
+    rc.right = 800;
+    rc.bottom = 600;
+
+    AdjustWindowRect(*rc, WS_OVERLAPPEDWINDOW, BOOL.FALSE);
+    
+    hwnd = CreateWindowExW(0, utf8_to_wide("JaiWindowClass"), utf8_to_wide("Direct3D 11 Example in JAI"), 
+                           WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX, 
+                           CW_USEDEFAULT, CW_USEDEFAULT, rc.right - rc.left, rc.bottom - rc.top, null, null, null, null);
+    if !hwnd {
+        print ("CreateWindowExA failed!\n");
+        return false; 
+    }
+ 
+    //ShowWindow(hwnd, SW_SHOW);
+    ShowWindow(hwnd, SW_SHOWDEFAULT);
+    UpdateWindow(hwnd);
+ 
+    return true; 
+} 
+
+
+CompileShader :: (source: string, entry_point: string, shader_model: string) -> string, HRESULT {
+    flags := D3DCOMPILE_ENABLE_STRICTNESS; 
+
+    #if DEBUG {
+        // Set the D3DCOMPILE_DEBUG flag to embed debug information in the shaders. 
+        // Setting this flag improves the shader debugging experience, but still allows  
+        // the shaders to be optimized and to run exactly the way they will run in  
+        // the release configuration of this program. 
+        flags |= D3DCOMPILE_DEBUG; 
+     
+        // Disable optimizations to further improve shader debugging 
+        flags |= D3DCOMPILE_SKIP_OPTIMIZATION; 
+    }
+ 
+    defines: [] string;
+    bytecode, errors, hr := D3DCompile(source, "source", defines, null, entry_point, shader_model, xx flags, 0);
+    defer free(errors);
+
+    if FAILED(hr) { 
+        free(bytecode);
+        if errors print ("Error msg: %\n", errors);
+        return "", hr;
+    } 
+    
+    return bytecode, hr;
+}
+
+
+//-------------------------------------------------------------------------------------- 
+// Create Direct3D device and swap chain 
+//-------------------------------------------------------------------------------------- 
+init_device :: () -> bool {
+    hr : HRESULT = S_OK; 
+ 
+    flags : D3D11_CREATE_DEVICE_FLAGS; 
+    #if DEBUG flags |= D3D11_CREATE_DEVICE_DEBUG;
+ 
+    driver_types   := D3D_DRIVER_TYPE.[D3D_DRIVER_TYPE_HARDWARE, D3D_DRIVER_TYPE_WARP, D3D_DRIVER_TYPE_REFERENCE];
+    feature_levels := D3D_FEATURE_LEVEL.[D3D_FEATURE_LEVEL_11_1, D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_10_1, D3D_FEATURE_LEVEL_10_0];
+ 
+    for 0..driver_types.count-1 {
+
+        driver_type = driver_types[it]; 
+        hr = D3D11CreateDevice(null, driver_type, null, flags, feature_levels.data, feature_levels.count, D3D11_SDK_VERSION, *d3d_device, *feature_level, *d3d_context);
+ 
+        if hr == E_INVALIDARG {
+            // DirectX 11.0 platforms will not recognize D3D_FEATURE_LEVEL_11_1 so we need to retry without it.
+            hr = D3D11CreateDevice(null, driver_type, null, flags, feature_levels.data + 1, feature_levels.count - 1, D3D11_SDK_VERSION, *d3d_device, *feature_level, *d3d_context);
+        }
+ 
+        if SUCCEEDED(hr) break;
+    } 
+    if FAILED(hr) {
+        print("D3D11CreateDevice failed.\n");
+        return false;
+    }
+
+    assert(d3d_device != null);
+    print("Created D3D11 device % with feature level %\n", d3d_device, feature_level);
+
+
+    // Obtain DXGI factory from device (since we used null for pAdapter above) 
+    dxgi_factory : *IDXGIFactory1;
+    {
+        dxgi_device : *IDXGIDevice;
+        hr = d3d_device.QueryInterface(xx d3d_device, *uid(IDXGIDevice.uuid), xx *dxgi_device); 
+        if SUCCEEDED(hr) {
+            adapter : *IDXGIAdapter;
+            hr = dxgi_device.GetAdapter(dxgi_device, *adapter);
+            if SUCCEEDED(hr) {
+                hr = adapter.GetParent(xx adapter, *uid(IDXGIFactory1.uuid), xx *dxgi_factory); 
+                adapter.Release(xx adapter); 
+            } 
+            dxgi_device.Release(xx dxgi_device); 
+        }
+        else {
+            print("QueryInterface FAILED\n");
+        }
+    }
+    if FAILED(hr) {
+        print("GetAdapter failed.\n");
+        return false;
+    }
+
+    print("Create swap chain\n");
+
+    rc : RECT;
+    GetClientRect(hwnd, *rc); 
+    width := rc.right - rc.left; 
+    height := rc.bottom - rc.top; 
+
+    // Create swap chain 
+    /*dxgi_factory2 : *IDXGIFactory2;
+    hr = dxgi_factory.QueryInterface(xx dxgi_factory, *uid(IDXGIFactory2.uuid), xx *dxgi_factory2); 
+    if dxgi_factory2 {
+        // DirectX 11.1 or later 
+        hr = d3d_device.QueryInterface(xx d3d_device, *uid(ID3D11Device1.uuid), xx *d3d_device1); 
+        if SUCCEEDED(hr) {
+            d3d_context.QueryInterface(xx d3d_context, *uid(ID3D11DeviceContext1.uuid), xx *d3d_context); 
+        } 
+ 
+        sd : DXGI_SWAP_CHAIN_DESC1; 
+        sd.Width = width; 
+        sd.Height = height; 
+        sd.Format = DXGI_FORMAT_R8G8B8A8_UNORM; 
+        sd.SampleDesc.Count = 1; 
+        sd.SampleDesc.Quality = 0; 
+        sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT; 
+        sd.BufferCount = 1; 
+ 
+        hr = dxgi_factory2.CreateSwapChainForHwnd(dxgi_factory2, d3d_device, hwnd, *sd, null, null, *swap_chain1 ); 
+        if SUCCEEDED(hr) {
+            hr = swap_chain1.QueryInterface(xx swap_chain1, *uid(IDXGISwapChain.uuid), *swap_chain); 
+        } 
+ 
+        dxgi_factory2.Release(xx dxgi_factory2); 
+    } 
+    else*/ {
+        // DirectX 11.0 systems 
+        sd : DXGI_SWAP_CHAIN_DESC; 
+        sd.BufferCount = 1; 
+        sd.BufferDesc.Width = xx width; 
+        sd.BufferDesc.Height = xx height; 
+        sd.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM; 
+        sd.BufferDesc.RefreshRate.Numerator = 60; 
+        sd.BufferDesc.RefreshRate.Denominator = 1; 
+        sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT; 
+        sd.OutputWindow = hwnd; 
+        sd.SampleDesc.Count = 1; 
+        sd.SampleDesc.Quality = 0; 
+        sd.Windowed = BOOL.TRUE; 
+ 
+        hr = dxgi_factory.CreateSwapChain(xx dxgi_factory, xx d3d_device, *sd, *swap_chain); 
+    } 
+ 
+    // Note this tutorial doesn't handle full-screen swapchains so we block the ALT+ENTER shortcut 
+    dxgi_factory.MakeWindowAssociation(xx dxgi_factory, hwnd, DXGI_MWA_NO_ALT_ENTER); 
+    dxgi_factory.Release(xx dxgi_factory); 
+ 
+    if FAILED(hr) return false;
+    
+ 
+    print("Create a render target view\n");
+
+    back_buffer : *ID3D11Texture2D; 
+    hr = swap_chain.GetBuffer(swap_chain, 0, *uid(ID3D11Texture2D.uuid), xx *back_buffer); 
+    if FAILED( hr ) return false;
+ 
+    hr = d3d_device.CreateRenderTargetView(d3d_device, xx back_buffer, null, *render_target_view); 
+    back_buffer.Release(xx back_buffer); 
+    if FAILED(hr) return false;
+ 
+    d3d_context.OMSetRenderTargets(d3d_context, 1, *render_target_view, null); 
+ 
+    
+    print("Setup the viewport\n");
+
+    vp : D3D11_VIEWPORT; 
+    vp.Width = xx width; 
+    vp.Height = xx height; 
+    vp.MinDepth = 0.0;
+    vp.MaxDepth = 1.0;
+    vp.TopLeftX = 0;
+    vp.TopLeftY = 0;
+    d3d_context.RSSetViewports(d3d_context, 1, *vp);
+
+    print("Compile the vertex shader\n");
+
+    vs : string;
+    vs, hr = CompileShader(shader_text, "VS", "vs_4_0"); 
+    if FAILED(hr) {
+        MessageBoxW(null, utf8_to_wide("The shader cannot be compiled."), utf8_to_wide("Error"), MB_OK);
+        return false; 
+    }
+    assert(vs.data != null);
+
+    // Create the vertex shader
+    hr = d3d_device.CreateVertexShader(d3d_device, vs.data, xx vs.count, null, *vertex_shader);
+    if FAILED(hr) {
+        free(vs);
+        return false;
+    } 
+
+    // Define the input layout 
+    layout : [1]D3D11_INPUT_ELEMENT_DESC;
+    // @@ { 
+    //      { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 }, 
+    // }; 
+    layout[0].SemanticName = "POSITION";
+    layout[0].SemanticIndex = 0;
+    layout[0].Format = DXGI_FORMAT_R32G32B32_FLOAT;
+    layout[0].InputSlot = 0;
+    layout[0].AlignedByteOffset = 0;
+    layout[0].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
+    layout[0].InstanceDataStepRate = 0;
+
+    // Create the input layout 
+    hr = d3d_device.CreateInputLayout(d3d_device, layout.data, cast(u32) layout.count, vs.data, xx vs.count, *vertex_layout);
+    free(vs);
+    if FAILED(hr) return false;
+ 
+    // Set the input layout 
+    d3d_context.IASetInputLayout(d3d_context, vertex_layout); 
+ 
+
+    print("Compile the pixel shader\n");
+
+    ps : string;
+    ps, hr = CompileShader(shader_text, "PS", "ps_4_0");
+    if FAILED(hr) {
+        MessageBoxW(null, utf8_to_wide("The shader cannot be compiled."), utf8_to_wide("Error"), MB_OK);
+        return false;
+    } 
+ 
+    // Create the pixel shader 
+    hr = d3d_device.CreatePixelShader(d3d_device, ps.data, xx ps.count, null, *pixel_shader);
+    free(ps);
+    if FAILED(hr) return false;
+
+
+    print("Create vertex buffer\n");
+ 
+    vertices : [3] Vector3;
+    vertices[0] = make_vector3( 0.0, 0.5, 0.5 );
+    vertices[1] = make_vector3( 0.5, -0.5, 0.5 );
+    vertices[2] = make_vector3( -0.5, -0.5, 0.5 );
+    
+    bd : D3D11_BUFFER_DESC;
+    bd.Usage = D3D11_USAGE_DEFAULT; 
+    bd.ByteWidth = size_of(Vector3) * 3;
+    bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+    bd.CPUAccessFlags = 0;
+
+    InitData : D3D11_SUBRESOURCE_DATA; 
+    InitData.pSysMem = vertices.data; 
+
+    hr = d3d_device.CreateBuffer(d3d_device, *bd, *InitData, *vertex_buffer);
+    if FAILED(hr) return false;
+ 
+    // Set vertex buffer 
+    stride: u32 = size_of(Vector3);
+    offset: u32 = 0; 
+    d3d_context.IASetVertexBuffers(d3d_context, 0, 1, *vertex_buffer, *stride, *offset); 
+
+    // Set primitive topology 
+    d3d_context.IASetPrimitiveTopology(d3d_context, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+ 
+    return true; 
+} 
+ 
+
+
+//-------------------------------------------------------------------------------------- 
+// Clean up the objects we've created 
+//-------------------------------------------------------------------------------------- 
+cleanup_device :: () {
+
+    if d3d_context d3d_context.ClearState(d3d_context);
+ 
+    if vertex_buffer vertex_buffer.Release(xx vertex_buffer);
+    if vertex_layout vertex_layout.Release(xx vertex_layout);
+    if vertex_shader vertex_shader.Release(xx vertex_shader);
+    if pixel_shader pixel_shader.Release(xx pixel_shader);
+    if render_target_view render_target_view.Release(xx render_target_view);
+    //if swap_chain1 swap_chain1.Release(xx swap_chain1);
+    if swap_chain swap_chain.Release(xx swap_chain);
+    //if d3d_context1 d3d_context1.Release(xx d3d_context1);
+    if d3d_context d3d_context.Release(xx d3d_context);
+    //if d3d_device1 d3d_device1.Release(xx d3d_device1);
+    if d3d_device d3d_device.Release(xx d3d_device);
+} 
+ 
+ 
+//-------------------------------------------------------------------------------------- 
+// Called every time the application receives a message 
+//-------------------------------------------------------------------------------------- 
+WndProc :: (hWnd: HWND, message: u32, wParam: WPARAM, lParam: LPARAM) -> LRESULT #c_call {
+    //ps : PAINTSTRUCT;
+    hdc : HDC;
+ 
+    if message == { 
+    //case WM_PAINT;
+        //hdc = BeginPaint(hWnd, *ps); 
+        //EndPaint(hWnd, *ps); 
+        
+    case WM_DESTROY;
+        PostQuitMessage( 0 ); 
+ 
+        // Note that this tutorial does not handle resizing (WM_SIZE) requests, 
+        // so we created the window without the resize border. 
+     case; 
+        return DefWindowProcW( hWnd, message, wParam, lParam ); 
+    } 
+ 
+    return 0; 
+} 
+ 
+ 
+//-------------------------------------------------------------------------------------- 
+// Render a frame 
+//-------------------------------------------------------------------------------------- 
+render :: () {
+    // Clear the back buffer
+    color: [4] float;
+    d3d_context.ClearRenderTargetView(d3d_context, render_target_view, *color); 
+ 
+    // Render a triangle 
+    d3d_context.VSSetShader(d3d_context, vertex_shader, null, 0); 
+    d3d_context.PSSetShader(d3d_context, pixel_shader, null, 0); 
+    d3d_context.Draw(d3d_context, 3, 0 ); 
+ 
+    // Present the information rendered to the back buffer to the front buffer (the screen) 
+    swap_chain.Present(swap_chain, 0, 0); 
+} 
+

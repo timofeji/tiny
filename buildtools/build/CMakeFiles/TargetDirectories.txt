@@ -1,0 +1,4 @@
+C:/tiny/buildtools/build/CMakeFiles/AppFramework.dir
+C:/tiny/buildtools/build/CMakeFiles/TinyBuildTools.dir
+C:/tiny/buildtools/build/CMakeFiles/ALL_BUILD.dir
+C:/tiny/buildtools/build/CMakeFiles/ZERO_CHECK.dir
