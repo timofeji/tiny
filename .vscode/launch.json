@@ -8,7 +8,7 @@
             "name": "(Windows) Launch",
             "type": "cppvsdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/buildtools/build/Debug/TinyBuildTools.exe",
+            "program": "${workspaceFolder}/hypergraph/build/Debug/hypergraph.exe",
             "args": ["${workspaceFolder}/tiny-engine/tiny-engine.jai"],
             "stopAtEntry": false,
             "cwd": "${workspaceRoot}",

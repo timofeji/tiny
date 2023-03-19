@@ -1,0 +1,4 @@
+C:/tiny/hypergraph/build/CMakeFiles/AppFramework.dir
+C:/tiny/hypergraph/build/CMakeFiles/hypergraph.dir
+C:/tiny/hypergraph/build/CMakeFiles/ALL_BUILD.dir
+C:/tiny/hypergraph/build/CMakeFiles/ZERO_CHECK.dir

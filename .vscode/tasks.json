@@ -3,14 +3,34 @@
 	"tasks": [
 		{
 			"type": "shell",
-			"label": "build",
-			"command": "",
+			"label": "prebuild",
+			"options": {
+				"cwd": "${workspaceRoot}/hypergraph/build"
+			},
+			"command": "cmake",
 			"args": [
-				"cd ${workspaceFolder}\\buildtools\\build && cmake .. && cmake --build ."
+				".."
 			],
 			"group": "build",
 			"problemMatcher": [],
 			"detail": "CMake template build task"
+		},
+
+		{
+			"type": "shell",
+			"label": "build",
+			"options": {
+				"cwd": "${workspaceRoot}/hypergraph/build"
+			},
+			"command": "cmake ",
+			"args": [
+				"--build",
+				"."
+			],
+			"group": "build",
+			"dependsOn":["prebuild"],
+			"problemMatcher": [],
+			"detail": "CMake build binary"
 		}
 	]
 }
