@@ -1,8 +1,16 @@
 #include "app.h"
 
-bool OSPlatform::init(MainArgs)
+namespace OSPlatform
 {
-    gAppState = AppState(MainArgsVars);
-    return true;
-}
+    namespace{
 
+        OSPlatformState gPlatformState;
+    }
+    bool init(MainArgs)
+    {
+        gPlatformState = OSPlatformState(MainArgsVars);
+        return true;
+    }
+
+    const OSPlatformState& OSPlatform::getGlobalAppState() { return gPlatformState; }
+}

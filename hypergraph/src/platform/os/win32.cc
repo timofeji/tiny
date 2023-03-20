@@ -4,17 +4,17 @@
 Windows specific app entry
 </Summary>
 */
-
+#include <windowsx.h>
 #ifndef UNICODE
 #define UNICODE
 #endif 
 
+#include "win32.h"
 #include "../app.h"
+#include "../main.h"
 
-HINSTANCE hInstance;
-HINSTANCE hPrevInstance;
+
 LPSTR lpCmdLine;
-int nCmdShow;
 
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
@@ -66,10 +66,12 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
         argv = NULL;
     }
 
-
-    //Initialize our application
-    OSPlatform::init( hInstance, hPrevInstance, lpCmdLine, nCmdShow);
-    // gAppMain(argc, (const char **)argv);
+    // Initialize our application and call application main
+    OSPlatform::init(hInstance, hPrevInstance, lpCmdLine, nCmdShow);
+    if (gAppMain)
+    {
+        gAppMain(argc, (const char **)argv);
+    }
 
     // Free up the items we had to allocate for the command line arguments.
     if (argc > 0 && argv != NULL) {
@@ -81,6 +83,94 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
         free(argv);
     }
 
-    return 0;
+    return msg.wParam;
 }
 
+
+/// WINDOW
+namespace OSPlatform
+{
+    bool Window::create(const WindowSettings &desc, EventQueue &eventQueue)
+    {
+        const wchar_t CLASS_NAME[]  = L"Sample Window Class";
+        const wchar_t TITLE_NAME[]  = L"Sample Window Class";
+
+        
+
+        const OSPlatform::OSPlatformState& state = getGlobalAppState();
+
+        HINSTANCE hInstance = state.hInstance;
+
+        WNDCLASS wc = {};
+        wc.lpfnWndProc = WindowProc;
+        wc.hInstance = hInstance;
+        wc.lpszClassName = CLASS_NAME;
+        wc.hIcon = LoadIcon(NULL, IDI_APPLICATION);
+        wc.hCursor = LoadCursor(NULL, IDC_ARROW);
+        wc.lpszMenuName = NULL;
+        wc.hbrBackground = (HBRUSH)(COLOR_WINDOW+1);
+
+        RegisterClass(&wc);
+
+        HWND hWnd = CreateWindowEx(
+            0,                           // Optional window styles.
+            CLASS_NAME,                  // Window class
+            L"Learn to Program Windows", // Window text
+            WS_OVERLAPPEDWINDOW,         // Window style
+
+            // Size and position
+            CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
+
+            NULL,      // Parent window
+            NULL,      // Menu
+            hInstance, // Instance handle
+            NULL       // Additional application data
+        );
+
+        if (hWnd == NULL)
+        {
+            return 0;
+        }
+
+        ShowWindow(hWnd, state.nCmdShow);
+        SetForegroundWindow(hWnd);
+
+        return true;
+    }
+
+    void Window::close()
+    {
+        
+    }
+
+    void EventQueue::update()
+    {
+        MSG msg = {};
+
+        while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+        {
+            // Translate virtual key messages
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);
+        }
+    }
+}
+
+LRESULT CALLBACK WindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+    // sort through and find what code to run for the message given
+    switch (message)
+    {
+    // this message is read when the window is closed
+    case WM_DESTROY:
+    {
+        // close the application entirely
+        PostQuitMessage(0);
+        return 0;
+    }
+    break;
+    }
+
+    // Handle any messages the switch statement didn't
+    return DefWindowProc(hWnd, message, wParam, lParam);
+}
