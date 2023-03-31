@@ -20,7 +20,6 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow)
 {
-
 // #ifdef _DEBUG
 //     AllocConsole();
 //     FILE* pCout;
@@ -95,12 +94,9 @@ namespace OSPlatform
         const wchar_t CLASS_NAME[]  = L"Sample Window Class";
         const wchar_t TITLE_NAME[]  = L"Sample Window Class";
 
-        
-
         const OSPlatform::OSPlatformState& state = getGlobalAppState();
 
         HINSTANCE hInstance = state.hInstance;
-
         WNDCLASS wc = {};
         wc.lpfnWndProc = WindowProc;
         wc.hInstance = hInstance;
@@ -108,7 +104,7 @@ namespace OSPlatform
         wc.hIcon = LoadIcon(NULL, IDI_APPLICATION);
         wc.hCursor = LoadCursor(NULL, IDC_ARROW);
         wc.lpszMenuName = NULL;
-        wc.hbrBackground = (HBRUSH)(COLOR_WINDOW+1);
+        wc.hbrBackground = (HBRUSH)(COLOR_3DHILIGHT+1);
 
         RegisterClass(&wc);
 

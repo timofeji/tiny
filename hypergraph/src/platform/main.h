@@ -1,4 +1,4 @@
-
+#include "../renderer/renderer.h"
 
 void appMain(int argc, const char** argv)
 {
@@ -17,6 +17,9 @@ void appMain(int argc, const char** argv)
     {
         return;
     }
+
+    Renderer renderer;
+    renderer.init();
 
     bool isRunning = true;
 

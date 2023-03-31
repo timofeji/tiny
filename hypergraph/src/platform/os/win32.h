@@ -9,8 +9,8 @@ Windows-specific header files
 #pragma once
 
 #include <Windows.h>
-// #include "../framework/input.h"
-#include "../framework/window.h"
+// #include "../platform/input.h"
+#include "../window.h"
 
 #include <queue>
 #include <functional>
